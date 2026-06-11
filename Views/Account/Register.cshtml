@@ -1,0 +1,102 @@
+
+@model PUPEventVenue.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid p-0 min-vh-100 d-flex flex-column">
+    <div class="row g-0 flex-grow-1 min-vh-100">
+        
+        <!-- Left Panel: Graphic & Welcome Message (Hidden on small screens) -->
+        <div class="col-lg-6 d-none d-lg-flex position-relative" 
+             style="background: linear-gradient(135deg, rgba(179, 0, 0, 0.9), rgba(99, 0, 0, 0.95)), url('/images/pup-campus.jpg'); background-size: cover; background-position: center;">
+            <div class="p-5 text-white d-flex flex-column justify-content-center align-items-center text-center w-100 h-100">
+                <div class="auth-logo mb-4" style="font-size: 3.5rem;">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h1 class="fw-bold mb-3 display-4">Join Us Today</h1>
+                <p class="lead mb-0 opacity-75 mx-auto" style="max-width: 400px;">Create an account to start booking and managing your campus events at PUP.</p>
+            </div>
+        </div>
+
+        <!-- Right Panel: Registration Form -->
+        <div class="col-lg-6 d-flex align-items-center justify-content-center bg-white p-4 p-md-5">
+            <!-- Slightly wider max-width than login (550px vs 450px) to accommodate the 2-column form rows -->
+            <div class="w-100" style="max-width: 550px;">
+                
+                <!-- Mobile Header (Visible only on small screens) -->
+                <div class="text-center mb-5 d-lg-none">
+                    <div class="auth-logo mb-3">
+                        <i class="fas fa-university fs-1 text-maroon"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">Create Account</h3>
+                    <p class="small mb-0 text-muted">PUP Event Venue Reservation System</p>
+                </div>
+
+                <!-- Desktop Header (Visible only on large screens) -->
+                <div class="d-none d-lg-block mb-4">
+                    <h3 class="fw-bold mb-1 text-dark">Sign Up</h3>
+                    <p class="text-muted">Please fill in the details to create your account.</p>
+                </div>
+
+                <form asp-action="Register" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small rounded"></div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="FullName" class="form-label text-maroon fw-semibold"><i class="fas fa-user me-1"></i>Full Name</label>
+                            <input asp-for="FullName" class="form-control form-control-lg rounded-pill px-4 fs-6" placeholder="Juan dela Cruz" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label asp-for="Email" class="form-label text-maroon fw-semibold"><i class="fas fa-envelope me-1"></i>Email Address</label>
+                            <input asp-for="Email" class="form-control form-control-lg rounded-pill px-4 fs-6" placeholder="your@email.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="StudentNumber" class="form-label text-maroon fw-semibold"><i class="fas fa-id-card me-1"></i>Student Number</label>
+                            <input asp-for="StudentNumber" class="form-control form-control-lg rounded-pill px-4 fs-6" placeholder="2021-00001" />
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="Department" class="form-label text-maroon fw-semibold"><i class="fas fa-graduation-cap me-1"></i>Department</label>
+                            <input asp-for="Department" class="form-control form-control-lg rounded-pill px-4 fs-6" placeholder="BSIT" />
+                        </div>
+                        
+                        <div class="col-12">
+                            <label asp-for="OrganizationName" class="form-label text-maroon fw-semibold"><i class="fas fa-users me-1"></i>Organization Name</label>
+                            <input asp-for="OrganizationName" class="form-control form-control-lg rounded-pill px-4 fs-6" placeholder="PUP Supreme Student Council" />
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="Password" class="form-label text-maroon fw-semibold"><i class="fas fa-lock me-1"></i>Password</label>
+                            <input asp-for="Password" class="form-control form-control-lg rounded-pill px-4 fs-6" placeholder="Min. 8 characters" type="password" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="ConfirmPassword" class="form-label text-maroon fw-semibold"><i class="fas fa-lock me-1"></i>Confirm Password</label>
+                            <input asp-for="ConfirmPassword" class="form-control form-control-lg rounded-pill px-4 fs-6" placeholder="Repeat password" type="password" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-pup btn-lg w-100 py-3 rounded-pill fw-bold shadow-sm mt-4">
+                        <i class="fas fa-user-check me-2"></i>Create Account
+                    </button>
+                </form>
+
+                <div class="text-center mt-5">
+                    <p class="text-muted">Already have an account?
+                        <a asp-controller="Account" asp-action="Login" class="text-maroon fw-bold text-decoration-none ms-1">Login here</a>
+                    </p>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,279 @@
+@model IEnumerable<PUPEventVenue.Models.Payment>
+@{
+    ViewData["Title"] = "Verify Payments";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-credit-card me-2"></i>Payment Verification</h1>
+        <p class="mb-0 opacity-75">Review and approve or reject payment receipts from organizers</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link @(ViewBag.Status == null || ViewBag.Status == "" ? "active" : "")"
+               href="@Url.Action("AdminVerify", new { status = "" })">
+                <i class="fas fa-hourglass-half me-1"></i> Pending Verification
+                @if (ViewBag.PendingCount > 0)
+                {
+                    <span class="badge bg-warning text-dark ms-1">@ViewBag.PendingCount</span>
+                }
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(ViewBag.Status == "verified" ? "active" : "")"
+               href="@Url.Action("AdminVerify", new { status = "verified" })">
+                <i class="fas fa-check-circle me-1"></i> Verified
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(ViewBag.Status == "rejected" ? "active" : "")"
+               href="@Url.Action("AdminVerify", new { status = "rejected" })">
+                <i class="fas fa-times-circle me-1"></i> Rejected
+            </a>
+        </li>
+    </ul>
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Organizer</th>
+                        <th>Event / Venue</th>
+                        <th>Amount</th>
+                        <th>Receipt</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @{int rowNum = 1;}
+                @foreach (var payment in Model)
+                {
+                    var statusColor = payment.Status switch
+                    {
+                        "Submitted" => "#e6a817",
+                        "Verified" or "Approved" => "#198754",
+                        "Rejected" => "#dc3545",
+                        _ => "#6c757d"
+                    };
+                    <tr>
+                        <td class="text-muted small">@(rowNum++)</td>
+                        <td>
+                            <div class="fw-semibold">@payment.Organizer?.FullName</div>
+                            <div class="small text-muted">@payment.Organizer?.OrganizationName</div>
+                            <div class="small text-muted">@payment.Organizer?.Email</div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold small">@payment.Reservation?.EventName</div>
+                            <div class="small text-muted">@payment.Reservation?.Venue?.Name</div>
+                            <div class="small text-muted">
+                                @payment.DurationHours hr(s) × ₱@payment.HourlyRate.ToString("F2")/hr
+                            </div>
+                        </td>
+                        <td>
+                            <span class="fw-bold text-success fs-6">₱@payment.Amount.ToString("F2")</span>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(payment.ReceiptImageUrl))
+{
+    bool isPdf = payment.ReceiptImageUrl.ToLower().EndsWith(".pdf");
+    if (isPdf)
+                                {
+                                    <a href="@payment.ReceiptImageUrl" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-file-pdf text-danger me-1"></i> PDF
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#receiptModal@(payment.PaymentId)">
+                                        <i class="fas fa-image me-1"></i> View
+                                    </button>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted small">No receipt</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill px-3 py-2 text-white"
+                                  style="background:@statusColor;font-size:.85em;">
+                                @payment.Status
+                            </span>
+                        </td>
+                        <td class="small text-muted">@payment.UpdatedAt.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            <a href="@Url.Action("Details", new { id = payment.PaymentId })"
+                               class="btn btn-sm btn-outline-info mb-1">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            @if (payment.Status == "Submitted")
+                            {
+                                <button type="button" class="btn btn-sm btn-success mb-1"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#approveModal@(payment.PaymentId)"
+                                        title="Approve">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger mb-1"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#rejectModal@(payment.PaymentId)"
+                                        title="Reject">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            }
+                        </td>
+                    </tr>
+
+                    <!-- Receipt Image Modal -->
+                   @if (!string.IsNullOrEmpty(payment.ReceiptImageUrl) &&
+     !payment.ReceiptImageUrl.ToLower().EndsWith(".pdf"))
+                    {
+                        <div class="modal fade" id="receiptModal@(payment.PaymentId)" tabindex="-1">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">
+                                            📄 Receipt — @payment.Organizer?.FullName
+                                            <small class="text-muted">(₱@payment.Amount.ToString("F2"))</small>
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body text-center p-2">
+                                        <img src="@payment.ReceiptImageUrl" alt="Receipt"
+                                             class="img-fluid rounded" style="max-height:500px;" />
+                                    </div>
+                                    <div class="modal-footer">
+                                        <a href="@payment.ReceiptImageUrl" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-external-link-alt me-1"></i> Open Full Size
+                                        </a>
+                                        @if (payment.Status == "Submitted")
+                                        {
+                                            <button type="button" class="btn btn-success btn-sm"
+                                                    data-bs-dismiss="modal"
+                                                    onclick="document.getElementById('approveBtn@(payment.PaymentId)').click()">
+                                                <i class="fas fa-check me-1"></i> Approve This Payment
+                                            </button>
+                                        }
+                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Approve Modal -->
+                    <div class="modal fade" id="approveModal@(payment.PaymentId)" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow">
+                                <div class="modal-header bg-success text-white">
+                                    <h5 class="modal-title"><i class="fas fa-check-circle me-2"></i>Approve Payment</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="post" action="@Url.Action("Verify")">
+                                    @Html.AntiForgeryToken()
+                                    <div class="modal-body">
+                                        <input type="hidden" name="paymentId" value="@payment.PaymentId" />
+                                        <div class="alert alert-light border rounded-3 mb-3">
+                                            <div><strong>Organizer:</strong> @payment.Organizer?.FullName</div>
+                                            <div><strong>Event:</strong> @payment.Reservation?.EventName</div>
+                                            <div><strong>Venue:</strong> @payment.Reservation?.Venue?.Name</div>
+                                            <div class="mt-2 fs-5 text-success fw-bold">Amount: ₱@payment.Amount.ToString("F2")</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Verification Notes <span class="text-muted">(optional)</span></label>
+                                            <textarea class="form-control" name="notes" rows="3"
+                                                      placeholder="e.g., Receipt verified and amount matches..."></textarea>
+                                        </div>
+                                        <div class="alert alert-info small py-2">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Approving this payment will <strong>automatically confirm the reservation</strong>
+                                            and send a notification to the organizer.
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" id="approveBtn@(payment.PaymentId)" class="btn btn-success fw-bold px-4">
+                                            <i class="fas fa-check me-1"></i> Approve & Confirm Reservation
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reject Modal -->
+                    <div class="modal fade" id="rejectModal@(payment.PaymentId)" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title"><i class="fas fa-times-circle me-2"></i>Reject Payment</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="post" action="@Url.Action("Reject")">
+                                    @Html.AntiForgeryToken()
+                                    <div class="modal-body">
+                                        <input type="hidden" name="paymentId" value="@payment.PaymentId" />
+                                        <div class="alert alert-light border rounded-3 mb-3">
+                                            <div><strong>Organizer:</strong> @payment.Organizer?.FullName</div>
+                                            <div><strong>Amount:</strong> <span class="text-success fw-bold">₱@payment.Amount.ToString("F2")</span></div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Rejection Reason <span class="text-danger">*</span></label>
+                                            <textarea class="form-control" name="reason" rows="3" required
+                                                      placeholder="e.g., Receipt amount does not match, image is unclear, wrong payment channel..."></textarea>
+                                        </div>
+                                        <div class="alert alert-warning small py-2">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            The organizer will be notified and can resubmit a new receipt.
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-danger fw-bold px-4">
+                                            <i class="fas fa-times me-1"></i> Reject Payment
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center py-5 rounded-xl">
+            @if (ViewBag.Status == "rejected")
+            {
+                <i class="fas fa-check-circle fa-2x text-muted mb-3 d-block"></i>
+                <h5>No rejected payments</h5>
+            }
+            else if (ViewBag.Status == "verified")
+            {
+                <i class="fas fa-check-double fa-2x text-muted mb-3 d-block"></i>
+                <h5>No verified payments yet</h5>
+            }
+            else
+            {
+                <i class="fas fa-inbox fa-2x text-muted mb-3 d-block"></i>
+                <h5>✅ No pending payments!</h5>
+                <p class="mb-0">All submitted receipts have been reviewed.</p>
+            }
+        </div>
+    }
+</div>

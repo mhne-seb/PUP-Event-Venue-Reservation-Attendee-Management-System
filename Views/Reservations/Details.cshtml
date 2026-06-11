@@ -1,0 +1,299 @@
+@model PUPEventVenue.Models.Reservation
+@{
+    ViewData["Title"] = "Reservation Details";
+    Layout = "_Layout";
+    var regToken = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(Model.ReservationId.ToString()));
+    var regLink = $"{Context.Request.Scheme}://{Context.Request.Host}/Attendees/Register?token={regToken}";
+}
+
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1" style="--bs-breadcrumb-divider-color:rgba(255,255,255,.5);">
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-white opacity-75">Reservations</a></li>
+                    <li class="breadcrumb-item active text-white">#@Model.ReservationId</li>
+                </ol></nav>
+                <h1 class="mb-0">@Model.EventName</h1>
+            </div>
+            <span class="badge badge-@Model.Status.ToLower() fs-6 px-3 py-2 rounded-pill">@Model.Status</span>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Event Info Card -->
+            <div class="card border-0 shadow-sm rounded-xl p-4 mb-4">
+                <h5 class="section-title mb-3">Event Information</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="small text-muted">Venue</div>
+                        <div class="fw-semibold">@Model.Venue?.Name</div>
+                        <div class="small text-muted">@Model.Venue?.Location</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Event Type</div>
+                        <div class="fw-semibold">@(Model.EventType ?? "—")</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Start</div>
+                        <div class="fw-semibold">@Model.StartDateTime.ToString("MMMM dd, yyyy hh:mm tt")</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">End</div>
+                        <div class="fw-semibold">@Model.EndDateTime.ToString("MMMM dd, yyyy hh:mm tt")</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Duration</div>
+                        <div class="fw-semibold">@Model.Duration.TotalHours.ToString("F1") hours</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Expected Attendees</div>
+                        <div class="fw-semibold">@Model.ExpectedAttendees.ToString("N0") persons</div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.EventDescription))
+                    {
+                        <div class="col-12">
+                            <div class="small text-muted">Description</div>
+                            <div>@Model.EventDescription</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Organizer Info -->
+            <div class="card border-0 shadow-sm rounded-xl p-4 mb-4">
+                <h5 class="section-title mb-3">Organizer</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-circle" style="width:48px;height:48px;font-size:1.2rem;">
+                        @Model.Organizer?.FullName?[0].ToString().ToUpper()
+                    </div>
+                    <div>
+                        <div class="fw-bold">@Model.Organizer?.FullName</div>
+                        <div class="small text-muted">@Model.Organizer?.Email</div>
+                        <div class="small text-muted">@Model.Organizer?.OrganizationName &nbsp;|&nbsp; @Model.Organizer?.Department</div>
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.AdminNotes) || !string.IsNullOrEmpty(Model.RejectionReason))
+            {
+                <div class="card border-0 shadow-sm rounded-xl p-4 mb-4">
+                    <h5 class="section-title mb-3">Admin Notes</h5>
+                    @if (!string.IsNullOrEmpty(Model.AdminNotes))
+                    {
+                        <p><strong>Notes:</strong> @Model.AdminNotes</p>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.RejectionReason))
+                    {
+                        <div class="alert alert-danger rounded-xl py-2"><i class="fas fa-times-circle me-1"></i><strong>Rejection Reason:</strong> @Model.RejectionReason</div>
+                    }
+                </div>
+            }
+
+            <!-- Attendees Summary -->
+            @if (Model.Status == "Approved")
+            {
+                <div class="card border-0 shadow-sm rounded-xl p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="section-title mb-0">Attendees (@Model.Attendees?.Count ?? 0)</h5>
+                        <a asp-controller="Attendees" asp-action="List" asp-route-reservationId="@Model.ReservationId" class="btn btn-sm btn-pup-outline rounded-pill px-3">
+                            Manage Attendees
+                        </a>
+                    </div>
+                    <!-- Registration Link -->
+                    <div class="bg-light rounded-xl p-3 mb-3">
+                        <div class="small fw-semibold mb-1"><i class="fas fa-link me-1 text-maroon"></i>Public Registration Link</div>
+                        <div class="d-flex gap-2">
+                            <input type="text" value="@regLink" id="regLinkInput" class="form-control form-control-sm rounded-pill" readonly />
+                            <button class="btn btn-sm btn-pup rounded-pill px-3" onclick="copyLink()"><i class="fas fa-copy"></i></button>
+                        </div>
+                        <div class="small text-muted mt-1">Share this link for attendees to self-register</div>
+                    </div>
+
+                    @if (Model.Attendees?.Any() == true)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-pup mb-0">
+                                <thead><tr><th>Name</th><th>Email</th><th>Dept.</th><th>Attended</th></tr></thead>
+                                <tbody>
+                                    @foreach (var a in Model.Attendees.Take(5))
+                                    {
+                                        <tr>
+                                            <td>@a.FullName</td>
+                                            <td class="small">@a.Email</td>
+                                            <td class="small">@a.Department</td>
+                                            <td><span class="badge @(a.HasAttended ? "bg-success" : "bg-secondary") rounded-pill">@(a.HasAttended ? "Yes" : "No")</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (Model.Attendees.Count > 5)
+                        {
+                            <div class="text-center mt-2">
+                                <a asp-controller="Attendees" asp-action="List" asp-route-reservationId="@Model.ReservationId" class="text-decoration-none small">
+                                    View all @Model.Attendees.Count attendees →
+                                </a>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar Actions -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-xl p-4 mb-3">
+                <h5 class="fw-bold mb-3">Actions</h5>
+
+                @if (User.IsInRole("Admin") && Model.Status == "Pending")
+                {
+                    <!-- Approve Form -->
+                    <form asp-action="Approve" method="post" class="mb-3">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="ReservationId" value="@Model.ReservationId" />
+                        <label class="form-label small fw-semibold">Admin Notes (optional)</label>
+                        <textarea name="Notes" class="form-control mb-2" rows="2" placeholder="Notes for organizer..."></textarea>
+                        <button type="submit" class="btn btn-success w-100 rounded-pill fw-bold" onclick="return confirm('Approve this reservation?');">
+                            <i class="fas fa-check me-2"></i>Approve Reservation
+                        </button>
+                    </form>
+                    <!-- Reject Form -->
+                    <form asp-action="Reject" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="ReservationId" value="@Model.ReservationId" />
+                        <label class="form-label small fw-semibold">Rejection Reason *</label>
+                        <textarea name="RejectionReason" class="form-control mb-2" rows="2" placeholder="Reason for rejection..." required></textarea>
+                        <button type="submit" class="btn btn-danger w-100 rounded-pill fw-bold" onclick="return confirm('Reject this reservation?');">
+                            <i class="fas fa-times me-2"></i>Reject Reservation
+                        </button>
+                    </form>
+                }
+
+                @if (Model.Status == "Pending" || Model.Status == "Approved")
+                {
+                    <form asp-action="Cancel" asp-route-id="@Model.ReservationId" method="post" class="mt-2">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger w-100 rounded-pill" onclick="return confirm('Cancel this reservation?');">
+                            <i class="fas fa-ban me-2"></i>Cancel Reservation
+                        </button>
+                    </form>
+                }
+
+                <a asp-action="Index" class="btn btn-outline-secondary w-100 rounded-pill mt-2">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+
+            <!-- Payment Status Card -->
+            @if (Model.Payment != null)
+            {
+                var p = Model.Payment;
+                var (bg, icon, label) = p.Status switch
+                {
+                    "Verified" or "Approved" => ("#198754", "fa-check-circle", "Verified"),
+                    "Submitted"              => ("#ffc107", "fa-hourglass-half", "Pending Review"),
+                    "Rejected"               => ("#dc3545", "fa-times-circle", "Rejected"),
+                    _                        => ("#6c757d", "fa-clock", "Awaiting Receipt")
+                };
+                <div class="card border-0 shadow-sm rounded-xl p-4 mb-3">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-credit-card me-2 text-maroon"></i>Payment</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small text-muted">Status</span>
+                        <span class="badge rounded-pill px-3 py-2 text-white" style="background:@bg;font-size:.85em;">
+                            <i class="fas @icon me-1"></i>@label
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small text-muted">Hourly Rate</span>
+                        <span class="small fw-semibold">₱@p.HourlyRate.ToString("F2")/hr</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small text-muted">Duration</span>
+                        <span class="small fw-semibold">@p.DurationHours hr(s)</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="small text-muted">Total Amount</span>
+                        <span class="fw-bold text-success">₱@p.Amount.ToString("F2")</span>
+                    </div>
+                    @if (p.Status == "Pending" || p.Status == "Rejected")
+                    {
+                        <a asp-controller="Payment" asp-action="SubmitReceipt"
+                           asp-route-reservationId="@Model.ReservationId"
+                           class="btn btn-pup w-100 rounded-pill fw-bold btn-sm">
+                            <i class="fas fa-upload me-1"></i>
+                            @(p.Status == "Rejected" ? "Resubmit Receipt" : "Upload Receipt")
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Payment" asp-action="Details"
+                           asp-route-id="@p.PaymentId"
+                           class="btn btn-outline-secondary w-100 rounded-pill btn-sm">
+                            <i class="fas fa-eye me-1"></i> View Payment
+                        </a>
+                    }
+                    @if (p.Status == "Rejected" && !string.IsNullOrEmpty(p.VerificationNotes))
+                    {
+                        <div class="alert alert-danger mt-2 py-2 small rounded-xl">
+                            <strong>Reason:</strong> @p.VerificationNotes
+                        </div>
+                    }
+                </div>
+            }
+            else if (Model.Venue?.PricePerHour > 0 && Model.Status == "Pending")
+            {
+                <div class="card border-0 shadow-sm rounded-xl p-4 mb-3 border-warning">
+                    <h5 class="fw-bold mb-2"><i class="fas fa-credit-card me-2 text-maroon"></i>Payment Required</h5>
+                    <p class="small text-muted mb-2">This venue charges <strong>₱@Model.Venue.PricePerHour.ToString("F2")/hr</strong>. Please upload your payment receipt to proceed.</p>
+                    <a asp-controller="Payment" asp-action="SubmitReceipt"
+                       asp-route-reservationId="@Model.ReservationId"
+                       class="btn btn-pup w-100 rounded-pill fw-bold btn-sm">
+                        <i class="fas fa-upload me-1"></i> Upload Receipt
+                    </a>
+                </div>
+            }
+
+            <!-- Timeline -->
+            <div class="card border-0 shadow-sm rounded-xl p-4">
+                <h6 class="fw-bold mb-3">Timeline</h6>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="small fw-semibold">Request Submitted</div>
+                        <div class="small text-muted">@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</div>
+                    </div>
+                    @if (Model.Status == "Approved" && Model.ApprovedAt.HasValue)
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-dot" style="background:#198754;box-shadow:0 0 0 2px #198754;"></div>
+                            <div class="small fw-semibold text-success">Approved</div>
+                            <div class="small text-muted">@Model.ApprovedAt.Value.ToString("MMM dd, yyyy hh:mm tt")</div>
+                        </div>
+                    }
+                    @if (Model.Status == "Rejected")
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-dot" style="background:#dc3545;box-shadow:0 0 0 2px #dc3545;"></div>
+                            <div class="small fw-semibold text-danger">Rejected</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function copyLink() {
+    const input = document.getElementById('regLinkInput');
+    input.select();
+    navigator.clipboard.writeText(input.value);
+    alert('Registration link copied!');
+}
+</script>
+}

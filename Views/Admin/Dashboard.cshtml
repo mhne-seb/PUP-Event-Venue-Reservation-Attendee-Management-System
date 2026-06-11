@@ -1,0 +1,120 @@
+
+@model PUPEventVenue.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-chart-pie me-2"></i>Admin Dashboard</h1>
+        <p class="mb-0 opacity-75">System overview and analytics</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <!-- KPI Cards -->
+    <div class="row g-3 mb-4">
+        @foreach (var (label, val, icon, bg, color) in new[]{
+            ("Total Venues", Model.TotalVenues, "fa-building", "#8B0000", "#fff"),
+            ("Total Reservations", Model.TotalReservations, "fa-calendar", "#2563EB", "#fff"),
+            ("Pending Approval", Model.PendingReservations, "fa-hourglass-half", "#D97706", "#fff"),
+            ("Total Attendees", Model.TotalAttendees, "fa-users", "#059669", "#fff"),
+            ("Approved Events", Model.ApprovedReservations, "fa-check-circle", "#7C3AED", "#fff"),
+            ("Total Users", Model.TotalUsers, "fa-user-friends", "#DB2777", "#fff")
+        })
+        {
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card border-0 shadow-sm rounded-xl h-100 p-3 text-white" style="background:@bg;">
+                    <div class="mb-1"><i class="fas @icon fa-lg opacity-75"></i></div>
+                    <div class="fs-2 fw-bold lh-1">@val</div>
+                    <div class="small opacity-80 mt-1">@label</div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Content Column (Table) -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-xl overflow-hidden h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="section-title mb-0">Recent Reservation Requests</h5>
+                        <a asp-controller="Reservations" asp-action="Index" class="btn btn-sm btn-pup-outline rounded-pill px-3">View All</a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-pup mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th><th>Event</th><th>Venue</th><th>Organizer</th><th>Date</th><th>Status</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model.RecentReservations)
+                            {
+                                <tr>
+                                    <td class="small text-muted">#@r.ReservationId</td>
+                                    <td class="fw-semibold small">@r.EventName</td>
+                                    <td class="small">@r.Venue?.Name</td>
+                                    <td class="small">@r.Organizer?.FullName</td>
+                                    <td class="small">@r.StartDateTime.ToString("MMM dd, yyyy")</td>
+                                    <td><span class="badge badge-@r.Status.ToLower() rounded-pill px-2">@r.Status</span></td>
+                                    <td>
+                                        <a asp-controller="Reservations" asp-action="Details" asp-route-id="@r.ReservationId" class="btn btn-sm btn-pup-outline rounded-pill px-3">View</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Column (Charts) -->
+        <div class="col-lg-4 d-flex flex-column gap-4">
+            <!-- Monthly Chart -->
+            <div class="card border-0 shadow-sm rounded-xl p-4">
+                <h5 class="section-title mb-3">Monthly Reservations</h5>
+                <canvas id="monthlyChart"></canvas>
+            </div>
+
+            <!-- Venue Usage Pie -->
+            <div class="card border-0 shadow-sm rounded-xl p-4 flex-grow-1">
+                <h5 class="section-title mb-3">Venue Usage</h5>
+                <canvas id="venueChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const months = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyStats.Select(m => m.Month)));
+const counts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyStats.Select(m => m.Count)));
+const vNames = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VenueUsageStats.Select(v => v.VenueName)));
+const vCounts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VenueUsageStats.Select(v => v.ReservationCount)));
+
+new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: {
+        labels: months,
+        datasets: [{ label: 'Reservations', data: counts, backgroundColor: '#8B000099', borderColor: '#8B0000', borderWidth: 2, borderRadius: 6 }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+
+new Chart(document.getElementById('venueChart'), {
+    type: 'doughnut',
+    data: {
+        labels: vNames,
+        datasets: [{ data: vCounts, backgroundColor: ['#8B0000','#B22222','#2563EB','#059669','#D97706','#7C3AED'], borderWidth: 0 }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+});
+</script>
+}
+
+```

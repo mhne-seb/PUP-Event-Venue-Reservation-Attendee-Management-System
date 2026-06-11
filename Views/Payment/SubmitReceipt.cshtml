@@ -1,0 +1,158 @@
+@model PUPEventVenue.ViewModels.PaymentSubmitViewModel
+@{
+    ViewData["Title"] = "Submit Payment Receipt";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-receipt me-2"></i>Submit Payment Receipt</h1>
+        <p class="mb-0 opacity-75">@Model.EventName</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger rounded-xl">@TempData["Error"]</div>
+            }
+
+            <div class="card border-0 shadow-sm rounded-xl p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-file-invoice-dollar me-2 text-success"></i>Payment Summary</h5>
+                <div class="row g-2">
+                    <div class="col-6 text-muted small">Event</div>
+                    <div class="col-6 fw-semibold small">@Model.EventName</div>
+
+                    <div class="col-6 text-muted small">Venue</div>
+                    <div class="col-6 fw-semibold small">@Model.VenueName</div>
+
+                    <div class="col-6 text-muted small">Hourly Rate</div>
+                    <div class="col-6 fw-semibold small">₱@Model.HourlyRate.ToString("F2") / hr</div>
+
+                    <div class="col-6 text-muted small">Duration</div>
+                    <div class="col-6 fw-semibold small">@Model.DurationHours hour(s)</div>
+
+                    <div class="col-12"><hr class="my-2" /></div>
+
+                    <div class="col-6 fw-bold">Total Amount Due</div>
+                    <div class="col-6 fw-bold fs-5 text-success">₱@Model.Amount.ToString("F2")</div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-xl p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-wallet me-2 text-info"></i>Where to Pay</h5>
+                <p class="text-muted small mb-3">Please send your payment of <strong>₱@Model.Amount.ToString("F2")</strong> to any of the accounts below before uploading your receipt.</p>
+                
+                <div class="row g-4 align-items-center">
+                    <div class="col-md-5 text-center border-end d-none d-md-block">
+                        <img src="/images/your-qr-code.jpg" alt="GCash QR Code" class="img-fluid border rounded p-1 mb-2" style="max-height: 180px;" />
+                        <div class="fw-bold text-primary small">Scan to Pay via GCash</div>
+                    </div>
+                    
+                    <div class="col-md-7">
+                        <div class="mb-3">
+                            <div class="fw-bold text-primary"><i class="fas fa-mobile-alt me-2"></i>GCash</div>
+                            <div class="small">Account Name: <strong>PUP Event Venue</strong></div>
+                            <div class="small">Number: <strong>0912 345 6789</strong></div>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-primary"><i class="fas fa-university me-2"></i>Bank Transfer (Landbank)</div>
+                            <div class="small">Account Name: <strong>PUP Venue Rentals</strong></div>
+                            <div class="small">Account Number: <strong>1234-5678-90</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-xl p-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-upload me-2 text-primary"></i>Upload Receipt</h5>
+
+                <div class="alert alert-warning small rounded-xl mb-3">
+                    <strong>📋 Instructions:</strong>
+                    <ul class="mb-0 mt-1">
+                        <li>Make sure your receipt clearly shows the amount <strong>₱@Model.Amount.ToString("F2")</strong></li>
+                        <li>Receipt must include the date and payment method</li>
+                        <li>Accepted formats: JPG, PNG, PDF (max 5MB)</li>
+                        <li>Admin will verify your receipt within 24 hours</li>
+                    </ul>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="PaymentId" value="@Model.PaymentId" />
+                    <input type="hidden" name="ReservationId" value="@Model.ReservationId" />
+                    <input type="hidden" name="EventName" value="@Model.EventName" />
+                    <input type="hidden" name="VenueName" value="@Model.VenueName" />
+                    <input type="hidden" name="Amount" value="@Model.Amount" />
+                    <input type="hidden" name="HourlyRate" value="@Model.HourlyRate" />
+                    <input type="hidden" name="DurationHours" value="@Model.DurationHours" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Payment Receipt <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" class="form-control" name="receiptFile"
+                               accept=".jpg,.jpeg,.png,.pdf" required
+                               onchange="previewReceipt(this)" />
+                        <small class="text-muted">JPG, PNG, or PDF — max 5MB</small>
+                    </div>
+
+                    <div id="previewContainer" class="mb-3" style="display:none;">
+                        <label class="form-label fw-semibold small">Preview:</label>
+                        <div class="border rounded-xl p-2 text-center bg-light">
+                            <img id="previewImg" src="" alt="Receipt Preview"
+                                 class="img-fluid rounded" style="max-height:300px;" />
+                            <div id="previewPdf" class="py-4" style="display:none;">
+                                <i class="fas fa-file-pdf text-danger fa-3x"></i>
+                                <div class="mt-2 small text-muted">PDF file selected</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 pt-3 border-top">
+                        <button type="submit" class="btn btn-pup px-4 rounded-pill fw-bold" style="background-color: #800000; color: white;">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Receipt
+                        </button>
+                        <a href="@Url.Action("Details", "Reservations", new { id = Model.ReservationId })"
+                           class="btn btn-outline-secondary rounded-pill px-4">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function previewReceipt(input) {
+    const container = document.getElementById('previewContainer');
+    const img       = document.getElementById('previewImg');
+    const pdf       = document.getElementById('previewPdf');
+
+    if (!input.files || !input.files[0]) {
+        container.style.display = 'none';
+        return;
+    }
+
+    const file = input.files[0];
+    container.style.display = 'block';
+
+    if (file.type === 'application/pdf') {
+        img.style.display = 'none';
+        pdf.style.display = 'block';
+    } else {
+        pdf.style.display = 'none';
+        img.style.display = 'block';
+        const reader = new FileReader();
+        reader.onload = e => img.src = e.target.result;
+        reader.readAsDataURL(file);
+    }
+}
+</script>
+}

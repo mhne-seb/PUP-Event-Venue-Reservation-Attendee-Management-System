@@ -1,0 +1,130 @@
+@model PUPEventVenue.Models.Payment
+@{
+    ViewData["Title"] = "Payment Details";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-receipt me-2"></i>Payment Details</h1>
+        <p class="mb-0 opacity-75">@Model.Reservation?.EventName</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            <!-- Status Banner -->
+            @{
+                var (bannerBg, bannerIcon, bannerText) = Model.Status switch
+                {
+                    "Verified" or "Approved" => ("#198754", "fa-check-circle", "Payment Approved"),
+                    "Submitted"              => ("#e6a817", "fa-hourglass-half", "Pending Verification"),
+                    "Rejected"               => ("#dc3545", "fa-times-circle", "Payment Rejected"),
+                    _                        => ("#6c757d", "fa-clock", "Awaiting Receipt")
+                };
+            }
+            <div class="rounded-xl p-3 mb-4 text-white d-flex align-items-center gap-3"
+                 style="background:@bannerBg;">
+                <i class="fas @bannerIcon fa-2x"></i>
+                <div>
+                    <div class="fw-bold fs-5">@bannerText</div>
+                    <div class="small opacity-75">Payment #@Model.PaymentId</div>
+                </div>
+            </div>
+
+            <!-- Payment Summary -->
+            <div class="card border-0 shadow-sm rounded-xl p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-file-invoice-dollar me-2 text-success"></i>Payment Summary</h5>
+                <div class="row g-2">
+                    <div class="col-6 text-muted small">Event</div>
+                    <div class="col-6 fw-semibold small">@Model.Reservation?.EventName</div>
+
+                    <div class="col-6 text-muted small">Venue</div>
+                    <div class="col-6 fw-semibold small">@Model.Reservation?.Venue?.Name</div>
+
+                    <div class="col-6 text-muted small">Hourly Rate</div>
+                    <div class="col-6 fw-semibold small">₱@Model.HourlyRate.ToString("F2") / hr</div>
+
+                    <div class="col-6 text-muted small">Duration</div>
+                    <div class="col-6 fw-semibold small">@Model.DurationHours hour(s)</div>
+
+                    <div class="col-6 text-muted small">Submitted On</div>
+                    <div class="col-6 fw-semibold small">@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</div>
+
+                    <div class="col-12"><hr class="my-2" /></div>
+
+                    <div class="col-6 fw-bold">Total Amount</div>
+                    <div class="col-6 fw-bold fs-5 text-success">₱@Model.Amount.ToString("F2")</div>
+                </div>
+            </div>
+
+            <!-- Receipt Image -->
+            @if (!string.IsNullOrEmpty(Model.ReceiptImageUrl))
+            {
+                <div class="card border-0 shadow-sm rounded-xl p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-image me-2 text-primary"></i>Submitted Receipt</h5>
+                    @if (Model.ReceiptImageUrl.ToLower().EndsWith(".pdf"))
+                    {
+                        <a href="@Model.ReceiptImageUrl" target="_blank" class="btn btn-outline-danger rounded-pill">
+                            <i class="fas fa-file-pdf me-2"></i>View PDF Receipt
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="text-center">
+                            <img src="@Model.ReceiptImageUrl" alt="Receipt"
+                                 class="img-fluid rounded-xl border"
+                                 style="max-height:400px;" />
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Verification Notes -->
+            @if (!string.IsNullOrEmpty(Model.VerificationNotes))
+            {
+                <div class="alert @(Model.Status == "Verified" || Model.Status == "Approved" ? "alert-success" : "alert-danger") rounded-xl mb-4">
+                    <strong>
+                        @(Model.Status == "Verified" || Model.Status == "Approved" ? "✅ Verification Notes:" : "❌ Rejection Reason:")
+                    </strong>
+                    <p class="mb-0 mt-1">@Model.VerificationNotes</p>
+                    @if (Model.VerifiedAt.HasValue)
+                    {
+                        <div class="small mt-2 opacity-75">
+                            Reviewed on @Model.VerifiedAt.Value.ToString("MMM dd, yyyy hh:mm tt")
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Actions -->
+            <div class="d-flex gap-2 flex-wrap">
+                @if (Model.Status == "Pending")
+                {
+                    <a href="@Url.Action("SubmitReceipt", new { reservationId = Model.ReservationId })"
+                       class="btn btn-pup rounded-pill px-4 fw-bold">
+                        <i class="fas fa-upload me-2"></i>Upload Receipt
+                    </a>
+                }
+                else if (Model.Status == "Rejected")
+                {
+                    <a href="@Url.Action("SubmitReceipt", new { reservationId = Model.ReservationId })"
+                       class="btn btn-warning rounded-pill px-4 fw-bold">
+                        <i class="fas fa-redo me-2"></i>Resubmit Receipt
+                    </a>
+                }
+                <a href="@Url.Action("Details", "Reservations", new { id = Model.ReservationId })"
+                   class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Reservation
+                </a>
+                <a href="@Url.Action("MyPayments")"
+                   class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="fas fa-list me-2"></i>My Payments
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,90 @@
+@model PUPEventVenue.ViewModels.VenueViewModel
+@{
+    bool isEdit = Model.VenueId > 0;
+    ViewData["Title"] = isEdit ? "Edit Venue" : "Add New Venue";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-@(isEdit ? "edit" : "plus-circle") me-2"></i>@ViewData["Title"]</h1>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-xl">
+                <div class="card-body p-4">
+                    <form asp-action="@(isEdit ? "Edit" : "Create")" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        @if (isEdit)
+                        {
+                            <input type="hidden" asp-for="VenueId" />
+                            <input type="hidden" asp-for="ExistingImageUrl" />
+                        }
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small rounded-xl"></div>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="Name" class="form-label">Venue Name *</label>
+                                <input asp-for="Name" class="form-control" placeholder="e.g. Main Auditorium" />
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Location" class="form-label">Location / Room</label>
+                                <input asp-for="Location" class="form-control" placeholder="e.g. Main Building, Ground Floor" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Capacity" class="form-label">Capacity (persons) *</label>
+                                <input asp-for="Capacity" type="number" class="form-control" min="1" />
+                                <span asp-validation-for="Capacity" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PricePerHour" class="form-label">Price Per Hour (₱) *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₱</span>
+                                    <input asp-for="PricePerHour" type="number" class="form-control" min="0" step="0.01" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="PricePerHour" class="text-danger small"></span>
+                                <small class="text-muted">Set to 0 if venue is free to use.</small>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="Description" class="form-label">Description</label>
+                                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe the venue..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="Amenities" class="form-label">Amenities <small class="text-muted">(comma-separated)</small></label>
+                                <input asp-for="Amenities" class="form-control" placeholder="Projector, Whiteboard, Air Conditioning, Sound System" />
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="ImageFile" class="form-label">Venue Image</label>
+                                @if (isEdit && !string.IsNullOrEmpty(Model.ExistingImageUrl))
+                                {
+                                    <div class="mb-2">
+                                        <img src="@Model.ExistingImageUrl" alt="Current" class="rounded-xl" style="max-height:120px;" onerror="this.style.display='none';" />
+                                        <div class="small text-muted mt-1">Current image. Upload a new one to replace.</div>
+                                    </div>
+                                }
+                                <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" />
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input asp-for="IsAvailable" class="form-check-input" type="checkbox" role="switch" />
+                                    <label asp-for="IsAvailable" class="form-check-label fw-semibold">Venue is Available for Booking</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-pup px-4 rounded-pill fw-bold">
+                                <i class="fas fa-save me-2"></i>@(isEdit ? "Save Changes" : "Create Venue")
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,152 @@
+@model List<PUPEventVenue.Models.Venue>
+@{
+    ViewData["Title"] = "Home";
+    Layout = "_Layout";
+}
+
+<section class="pup-hero" style="background: linear-gradient(rgba(128, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), url('/images/pup-campus.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+    <div class="container position-relative z-1 text-white text-center py-5">
+        <div class="hero-badge"><i class="fas fa-university me-1"></i> Polytechnic University of the Philippines</div>
+        <h1 class="display-4 fw-bold mb-3">Event Venue Reservation<br><span style="color:var(--pup-gold);">& Attendee Management System</span></h1>
+        <p class="lead mb-4 opacity-90 mx-auto" style="max-width:560px;">Book PUP venues, manage events, and track attendees — all in one centralized platform for student organizations and the university community.</p>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a asp-controller="Venues" asp-action="Index" class="btn btn-gold btn-lg px-4 py-3 rounded-pill fw-bold shadow">
+                <i class="fas fa-building me-2"></i> Browse Venues
+            </a>
+            @if (!User.Identity?.IsAuthenticated ?? true)
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn btn-outline-light btn-lg px-4 py-3 rounded-pill fw-semibold">
+                    <i class="fas fa-user-plus me-2"></i> Register Now
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Home" asp-action="Dashboard" class="btn btn-outline-light btn-lg px-4 py-3 rounded-pill fw-semibold">
+                    <i class="fas fa-tachometer-alt me-2"></i> My Dashboard
+                </a>
+            }
+        </div>
+
+        <div class="row g-3 mt-5 justify-content-center">
+            <div class="col-6 col-md-3">
+                <div class="p-3 rounded-xl" style="background:rgba(255,255,255,.1);backdrop-filter:blur(8px);">
+                    <div class="fw-bold fs-3" style="color:var(--pup-gold);">@Model.Count+</div>
+                    <div class="small opacity-80">Available Venues</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3 rounded-xl" style="background:rgba(255,255,255,.1);backdrop-filter:blur(8px);">
+                    <div class="fw-bold fs-3" style="color:var(--pup-gold);">5,000+</div>
+                    <div class="small opacity-80">Max Capacity</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3 rounded-xl" style="background:rgba(255,255,255,.1);backdrop-filter:blur(8px);">
+                    <div class="fw-bold fs-3" style="color:var(--pup-gold);">24/7</div>
+                    <div class="small opacity-80">Online Booking</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3 rounded-xl" style="background:rgba(255,255,255,.1);backdrop-filter:blur(8px);">
+                    <div class="fw-bold fs-3" style="color:var(--pup-gold);">Fast</div>
+                    <div class="small opacity-80">Approval Process</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold" style="color:var(--pup-maroon);">How It Works</h2>
+            <p class="text-muted">Three simple steps to get your event running</p>
+        </div>
+        <div class="row g-4 text-center">
+            @foreach (var (icon, step, title, desc) in new[]{
+                ("fa-search","1","Browse & Choose","Explore our available venues and check real-time availability for your preferred date and time."),
+                ("fa-file-alt","2","Submit Request","Fill in your event details and submit a reservation request for admin review."),
+                ("fa-users","3","Manage Attendees","Once approved, share the registration link and track your attendees in real time.")
+            })
+            {
+                <div class="col-md-4">
+                    <div class="p-4 position-relative">
+                        <div class="step-circle mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle fw-bold fs-5"
+                             style="width:64px;height:64px;background:linear-gradient(135deg,var(--pup-maroon),var(--pup-maroon-light));color:#fff;">
+                            @step
+                        </div>
+                        <div class="mb-2" style="color:var(--pup-gold);font-size:1.8rem;"><i class="fas @icon"></i></div>
+                        <h5 class="fw-bold">@title</h5>
+                        <p class="text-muted small">@desc</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@if (Model.Any())
+{
+    <section class="py-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <h2 class="section-title mb-0">Available Venues</h2>
+                <a asp-controller="Venues" asp-action="Index" class="btn btn-pup-outline btn-sm px-3 rounded-pill">
+                    View All <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="row g-4">
+                @foreach (var venue in Model)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="venue-card h-100">
+                            
+                            @if (!string.IsNullOrEmpty(venue.ImageUrl))
+                            {
+                                <img src="@venue.ImageUrl" alt="@venue.Name" class="card-img-top" style="height: 200px; object-fit: cover;" onerror="this.onerror=null;this.src='/images/default-venue.jpg';" />
+                            }
+                            else
+                            {
+                                <img src="/images/default-venue.jpg" alt="Default Venue" class="card-img-top" style="height: 200px; object-fit: cover;" />
+                            }
+
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title fw-bold mb-0">@venue.Name</h5>
+                                    <span class="badge @(venue.IsAvailable ? "bg-success" : "bg-secondary") rounded-pill">
+                                        @(venue.IsAvailable ? "Available" : "Unavailable")
+                                    </span>
+                                </div>
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-map-marker-alt me-1 text-maroon"></i>@venue.Location
+                                </p>
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-users me-1 text-maroon"></i>Capacity: <strong>@venue.Capacity.ToString("N0")</strong> pax
+                                </p>
+                                <div class="mb-3">
+                                    @foreach (var a in venue.AmenitiesList.Take(3))
+                                    {
+                                        <span class="amenity-pill"><i class="fas fa-check me-1"></i>@a</span>
+                                    }
+                                    @if (venue.AmenitiesList.Count > 3)
+                                    {
+                                        <span class="amenity-pill">+@(venue.AmenitiesList.Count - 3) more</span>
+                                    }
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a asp-controller="Venues" asp-action="Details" asp-route-id="@venue.VenueId" class="btn btn-pup-outline btn-sm flex-grow-1 rounded-pill">Details</a>
+                                    @if (User.Identity?.IsAuthenticated == true && venue.IsAvailable)
+                                    {
+                                        <a asp-controller="Reservations" asp-action="Create" asp-route-venueId="@venue.VenueId" class="btn btn-pup btn-sm flex-grow-1 rounded-pill">
+                                            <i class="fas fa-calendar-plus me-1"></i>Reserve
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}

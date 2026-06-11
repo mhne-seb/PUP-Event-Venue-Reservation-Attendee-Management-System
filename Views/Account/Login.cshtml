@@ -1,0 +1,85 @@
+@model PUPEventVenue.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_Layout"; // Note: If your _Layout has a navbar/footer, see the tip below!
+}
+
+<div class="container-fluid p-0 min-vh-100 d-flex flex-column">
+    <div class="row g-0 flex-grow-1 min-vh-100">
+        
+        <div class="col-lg-6 d-none d-lg-flex position-relative" 
+             style="background: linear-gradient(135deg, rgba(179, 0, 0, 0.9), rgba(99, 0, 0, 0.95)), url('/images/pup-campus.jpg'); background-size: cover; background-position: center;">
+            <div class="p-5 text-white d-flex flex-column justify-content-center align-items-center text-center w-100 h-100">
+                <div class="auth-logo mb-4" style="font-size: 3.5rem;">
+                    <i class="fas fa-university"></i>
+                </div>
+                <h1 class="fw-bold mb-3 display-4">Welcome Back</h1>
+                <p class="lead mb-0 opacity-75 mx-auto" style="max-width: 400px;">Access the PUP Event Venue Reservation System to book and manage your campus events.</p>
+            </div>
+        </div>
+
+        <div class="col-lg-6 d-flex align-items-center justify-content-center bg-white p-4 p-md-5">
+            <div class="w-100" style="max-width: 450px;">
+                
+                <div class="text-center mb-5 d-lg-none">
+                    <div class="auth-logo mb-3">
+                        <i class="fas fa-university fs-1 text-maroon"></i>
+                    </div>
+                    
+                    <h3 class="fw-bold mb-1">Welcome Back</h3>
+                    <p class="small mb-0 text-muted">PUP Event Venue Reservation System</p>
+                </div>
+
+                <div class="d-none d-lg-block mb-4">
+                    <h3 class="fw-bold mb-1 text-dark">Sign In</h3>
+                    <p class="text-muted">Please enter your credentials to continue.</p>
+                </div>
+
+                <form asp-action="Login" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small rounded"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label text-maroon fw-semibold"><i class="fas fa-envelope me-1"></i>Email Address</label>
+                        <input asp-for="Email" class="form-control form-control-lg rounded-pill px-4 fs-6" placeholder="your@email.com" autocomplete="email" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="Password" class="form-label text-maroon fw-semibold"><i class="fas fa-lock me-1"></i>Password</label>
+                        <input asp-for="Password" class="form-control form-control-lg rounded-pill px-4 fs-6" placeholder="••••••••" autocomplete="current-password" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input asp-for="RememberMe" class="form-check-input cursor-pointer" type="checkbox" id="rememberMe" />
+                            <label asp-for="RememberMe" class="form-check-label small cursor-pointer" for="rememberMe">Remember me</label>
+                        </div>
+                        <a href="#" class="text-maroon small text-decoration-none fw-semibold">Forgot Password?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-pup btn-lg w-100 py-3 rounded-pill fw-bold shadow-sm">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </button>
+                </form>
+
+                <div class="text-center mt-5">
+                    <p class="text-muted">Don't have an account?
+                        <a asp-controller="Account" asp-action="Register" class="text-maroon fw-bold text-decoration-none ms-1">Register here</a>
+                    </p>
+                </div>
+
+                <div class="alert alert-info mt-4 py-3 rounded shadow-sm border-0" style="background-color: rgba(128, 0, 0, 0.05); color: #800000;">
+                    <div class="fw-bold mb-2"><i class="fas fa-info-circle me-2"></i>Demo Accounts:</div>
+                    <div class="small ms-4">
+                        <strong>Admin:</strong> admin@pup.edu.ph / Admin@12345<br>
+                        <strong>Organizer:</strong> organizer@pup.edu.ph / Organizer@12345
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>

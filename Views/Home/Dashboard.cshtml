@@ -1,0 +1,147 @@
+@model PUPEventVenue.ViewModels.OrganizerDashboardViewModel
+@{
+    ViewData["Title"] = "My Dashboard";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-tachometer-alt me-2"></i>My Dashboard</h1>
+        <p class="mb-0 opacity-75">Welcome back! Here's your reservation overview.</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        @foreach (var (label, val, icon, color, bg) in new[]{
+            ("Total Reservations", Model.TotalReservations, "fa-calendar", "#fff", "var(--pup-maroon)"),
+            ("Pending", Model.PendingCount, "fa-hourglass-half", "#856404", "#FFF3CD"),
+            ("Approved", Model.ApprovedCount, "fa-check-circle", "#0F5132", "#D1E7DD"),
+            ("Rejected", Model.RejectedCount, "fa-times-circle", "#842029", "#F8D7DA")
+        })
+        {
+            <div class="col-6 col-md-3">
+                <div class="stat-card card border-0 h-100 shadow-sm p-3" style="background:@bg;color:@color;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="stat-icon" style="background:rgba(255,255,255,.25);">
+                            <i class="fas @icon"></i>
+                        </div>
+                        <div>
+                            <div class="fs-2 fw-bold lh-1">@val</div>
+                            <div class="small fw-semibold opacity-85">@label</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="row g-4">
+        <!-- Upcoming Events -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-xl h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="section-title mb-0">Upcoming Approved Events</h5>
+                        <a asp-controller="Reservations" asp-action="Index" class="btn btn-sm btn-pup-outline rounded-pill px-3">View All</a>
+                    </div>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    @if (!Model.UpcomingEvents.Any())
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-calendar-times fa-3x mb-3 opacity-25"></i>
+                            <p>No upcoming events. <a asp-controller="Venues" asp-action="Index">Browse venues</a> to make a reservation.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var r in Model.UpcomingEvents)
+                        {
+                            <div class="d-flex gap-3 align-items-start py-3 border-bottom">
+                                <div class="text-center p-2 rounded-xl" style="min-width:54px;background:var(--pup-bg);">
+                                    <div class="fw-bold" style="color:var(--pup-maroon);font-size:1.2rem;">@r.StartDateTime.Day</div>
+                                    <div class="small text-muted">@r.StartDateTime.ToString("MMM")</div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">@r.EventName</div>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-building me-1"></i>@r.Venue?.Name &nbsp;
+                                        <i class="fas fa-clock me-1"></i>@r.StartDateTime.ToString("hh:mm tt") – @r.EndDateTime.ToString("hh:mm tt")
+                                    </div>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-users me-1"></i>@r.AttendeeCount registered
+                                    </div>
+                                </div>
+                                <a asp-controller="Reservations" asp-action="Details" asp-route-id="@r.ReservationId" class="btn btn-sm btn-pup rounded-pill px-3">View</a>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-xl h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+                    <h5 class="section-title mb-0">Recent Notifications</h5>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    @if (!Model.RecentNotifications.Any())
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-bell-slash fa-3x mb-3 opacity-25"></i>
+                            <p class="small">No notifications yet.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var n in Model.RecentNotifications)
+                        {
+                            <div class="d-flex gap-2 py-2 border-bottom @(n.IsRead ? "" : "fw-semibold")">
+                                <i class="fas @(n.NotificationType == "Approved" ? "fa-check-circle text-success" : n.NotificationType == "Rejected" ? "fa-times-circle text-danger" : "fa-bell text-warning") mt-1"></i>
+                                <div>
+                                    <div class="small">@n.Title</div>
+                                    <div class="small text-muted">@n.CreatedAt.ToString("MMM dd, hh:mm tt")</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-3 mt-2">
+        <div class="col-12">
+            <h5 class="section-title mb-3">Quick Actions</h5>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Venues" asp-action="Index" class="card border-0 shadow-sm rounded-xl p-3 text-center text-decoration-none hover-card">
+                <i class="fas fa-building fa-2x mb-2" style="color:var(--pup-maroon);"></i>
+                <div class="fw-semibold small text-dark">Browse Venues</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Reservations" asp-action="Index" asp-route-status="Pending" class="card border-0 shadow-sm rounded-xl p-3 text-center text-decoration-none hover-card">
+                <i class="fas fa-hourglass-half fa-2x mb-2" style="color:#856404;"></i>
+                <div class="fw-semibold small text-dark">Pending Requests</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Reservations" asp-action="Index" asp-route-status="Approved" class="card border-0 shadow-sm rounded-xl p-3 text-center text-decoration-none hover-card">
+                <i class="fas fa-calendar-check fa-2x mb-2" style="color:#0F5132;"></i>
+                <div class="fw-semibold small text-dark">Approved Events</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Account" asp-action="Profile" class="card border-0 shadow-sm rounded-xl p-3 text-center text-decoration-none hover-card">
+                <i class="fas fa-user-cog fa-2x mb-2" style="color:var(--pup-maroon);"></i>
+                <div class="fw-semibold small text-dark">My Profile</div>
+            </a>
+        </div>
+    </div>
+</div>

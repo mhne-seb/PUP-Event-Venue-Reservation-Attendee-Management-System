@@ -1,0 +1,83 @@
+@model List<(PUPEventVenue.Models.ApplicationUser User, IList<string> Roles)>
+@{
+    ViewData["Title"] = "Manage Users";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-users me-2"></i>Manage Users</h1>
+        <p class="mb-0 opacity-75">@Model.Count total accounts</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <form method="get" class="card border-0 shadow-sm rounded-xl p-3 mb-4">
+        <div class="row g-2">
+            <div class="col-md-8">
+                <input type="text" name="search" value="@ViewBag.Search" class="form-control rounded-pill" placeholder="Search by name, email, organization..." />
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-pup rounded-pill flex-grow-1"><i class="fas fa-search me-1"></i>Search</button>
+                <a asp-action="Users" class="btn btn-outline-secondary rounded-pill px-3"><i class="fas fa-times"></i></a>
+            </div>
+        </div>
+    </form>
+
+    <div class="card border-0 shadow-sm rounded-xl overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-pup mb-0">
+                <thead>
+                    <tr>
+                        <th>User</th><th>Email</th><th>Organization</th><th>Role</th><th>Status</th><th>Joined</th><th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (user, roles) in Model)
+                    {
+                        <tr class="@(!user.IsActive ? "opacity-60" : "")">
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="avatar-circle" style="width:36px;height:36px;font-size:.85rem;">
+                                        @user.FullName[0].ToString().ToUpper()
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold small">@user.FullName</div>
+                                        <div class="small text-muted">@user.StudentNumber</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="small">@user.Email</td>
+                            <td class="small">@(user.OrganizationName ?? "—")<br><span class="text-muted">@user.Department</span></td>
+                            <td>
+                                @foreach (var role in roles)
+                                {
+                                    <span class="badge @(role == "Admin" ? "bg-danger" : "bg-primary") rounded-pill">@role</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge @(user.IsActive ? "bg-success" : "bg-secondary") rounded-pill">
+                                    @(user.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td class="small text-muted">@user.CreatedAt.ToString("MMM dd, yyyy")</td>
+                            <td class="text-end">
+                                @if (!roles.Contains("Admin"))
+                                {
+                                    <form asp-action="ToggleUserStatus" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="userId" value="@user.Id" />
+                                        <button type="submit" class="btn btn-sm @(user.IsActive ? "btn-outline-warning" : "btn-outline-success") rounded-pill"
+                                                onclick="return confirm('Toggle status for @user.FullName?');">
+                                            @(user.IsActive ? "Deactivate" : "Activate")
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

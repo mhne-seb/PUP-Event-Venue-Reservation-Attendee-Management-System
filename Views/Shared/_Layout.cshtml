@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PUP Event Venue System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark pup-navbar sticky-top shadow-sm">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
+                <div class="pup-logo-circle">
+                    <i class="fas fa-university"></i>
+                </div>
+                <div class="lh-1">
+                    <div class="fw-bold" style="font-size:1rem;">PUP</div>
+                    <div style="font-size:.65rem;opacity:.85;letter-spacing:.05em;">EVENT VENUE SYSTEM</div>
+                </div>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto ms-3 gap-1">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link px-3 rounded" asp-controller="Admin" asp-action="Dashboard">
+                                    <i class="fas fa-chart-pie me-1"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 rounded" asp-controller="Admin" asp-action="Users">
+                                    <i class="fas fa-users me-1"></i> Manage Users
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 rounded" asp-controller="Venues" asp-action="Index">
+                                    <i class="fas fa-building me-1"></i> Manage Venues
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 rounded" asp-controller="Admin" asp-action="Reports">
+                                    <i class="fas fa-file-alt me-1"></i> Reports
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 rounded" asp-controller="Admin" asp-action="VenueUsage">
+                                    <i class="fas fa-chart-bar me-1"></i> Venue Usage
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 rounded position-relative" asp-controller="Payment" asp-action="AdminVerify">
+                                    <i class="fas fa-credit-card me-1"></i> Verify Payments
+                                    @{
+                                        var pendingCount = ViewData["PendingPaymentCount"] as int?;
+                                        if (pendingCount > 0)
+                                        {
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.65rem;">@pendingCount</span>
+                                        }
+                                    }
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link px-3 rounded" asp-controller="Home" asp-action="Dashboard">
+                                    <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 rounded" asp-controller="Venues" asp-action="Index">
+                                    <i class="fas fa-building me-1"></i> Venues
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 rounded" asp-controller="Reservations" asp-action="Index">
+                                    <i class="fas fa-calendar-check me-1"></i> Reservations
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 rounded" asp-controller="Payment" asp-action="MyPayments">
+                                    <i class="fas fa-receipt me-1"></i> My Payments
+                                </a>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-3 rounded" asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-home me-1"></i> Home
+                            </a>
+                        </li>
+                    }
+                </ul>
+
+                <ul class="navbar-nav ms-auto align-items-center gap-2">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <!-- Notifications Bell -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link position-relative px-2" href="#" id="notifBell" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell fs-5"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notifBadge">0</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end p-0 shadow" style="min-width:340px;max-width:400px;" id="notifDropdown">
+                                <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                                    <strong class="text-dark">Notifications</strong>
+                                    <button class="btn btn-sm btn-link text-decoration-none p-0" onclick="markAllRead()">Mark all read</button>
+                                </div>
+                                <div id="notifList" style="max-height:320px;overflow-y:auto;"></div>
+                                <div class="text-center py-2 border-top">
+                                    <a asp-controller="Home" asp-action="Dashboard" class="text-decoration-none small">View Dashboard</a>
+                                </div>
+                            </div>
+                        </li>
+                        <!-- User Menu -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 px-2" href="#" data-bs-toggle="dropdown">
+                                <div class="avatar-circle">@User.Identity.Name?[0].ToString().ToUpper()</div>
+                                <span class="d-none d-md-inline" style="font-size:.9rem;">@User.Identity.Name</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                <li><a class="dropdown-item" asp-controller="Home" asp-action="Dashboard"><i class="fas fa-tachometer-alt me-2 text-maroon"></i>Dashboard</a></li>
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fas fa-user me-2 text-maroon"></i>Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-light btn-sm px-3" asp-controller="Account" asp-action="Login">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-warning btn-sm px-3 fw-semibold" asp-controller="Account" asp-action="Register">
+                                <i class="fas fa-user-plus me-1"></i> Register
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show m-0 rounded-0 border-0" role="alert">
+                <div class="container"><i class="fas fa-check-circle me-2"></i>@TempData["Success"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show m-0 rounded-0 border-0" role="alert">
+                <div class="container"><i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Warning"] != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show m-0 rounded-0 border-0" role="alert">
+                <div class="container"><i class="fas fa-exclamation-triangle me-2"></i>@TempData["Warning"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Info"] != null)
+        {
+            <div class="alert alert-info alert-dismissible fade show m-0 rounded-0 border-0" role="alert">
+                <div class="container"><i class="fas fa-info-circle me-2"></i>@TempData["Info"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @RenderBody()
+    </main>
+
+    <footer class="pup-footer mt-5 py-4">
+        <div class="container text-center">
+            <div class="mb-1 fw-semibold">Polytechnic University of the Philippines</div>
+            <div class="small opacity-75">Event Venue Reservation & Attendee Management System &copy; @DateTime.Now.Year</div>
+            <div class="small opacity-50 mt-1">Sta. Mesa, Manila, Philippines</div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script>
+            // Load notifications on page load
+            loadNotifications();
+            setInterval(loadNotifications, 60000);
+
+            async function loadNotifications() {
+                try {
+                    const res = await fetch('/Home/GetNotifications');
+                    const data = await res.json();
+                    const unread = data.filter(n => !n.isRead);
+                    const badge = document.getElementById('notifBadge');
+                    const list = document.getElementById('notifList');
+
+                    if (unread.length > 0) {
+                        badge.textContent = unread.length;
+                        badge.classList.remove('d-none');
+                    } else {
+                        badge.classList.add('d-none');
+                    }
+
+                    if (data.length === 0) {
+                        list.innerHTML = '<div class="text-center text-muted py-4 small">No notifications</div>';
+                        return;
+                    }
+
+                    list.innerHTML = data.map(n => `
+                        <div class="px-3 py-2 border-bottom notif-item ${n.isRead ? '' : 'notif-unread'}">
+                            <div class="d-flex gap-2 align-items-start">
+                                <span class="notif-icon ${getNotifColor(n.notificationType)}">
+                                    <i class="${getNotifIcon(n.notificationType)}"></i>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold small">${n.title}</div>
+                                    <div class="text-muted" style="font-size:.8rem;">${n.message}</div>
+                                    <div class="text-muted" style="font-size:.75rem;">${n.createdAt}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } catch (e) { console.error(e); }
+            }
+
+            async function markAllRead() {
+                await fetch('/Home/MarkNotificationsRead', { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || '' } });
+                loadNotifications();
+            }
+
+            function getNotifIcon(type) {
+                const icons = {
+                    'Approved': 'fas fa-check-circle',
+                    'Rejected': 'fas fa-times-circle',
+                    'NewRequest': 'fas fa-bell',
+                    'Reminder': 'fas fa-clock',
+                    'PaymentSubmitted': 'fas fa-file-upload',
+                    'PaymentApproved': 'fas fa-check-double',
+                    'PaymentRejected': 'fas fa-times-circle'
+                };
+                return icons[type] || 'fas fa-info-circle';
+            }
+            function getNotifColor(type) {
+                const colors = {
+                    'Approved': 'text-success',
+                    'Rejected': 'text-danger',
+                    'NewRequest': 'text-primary',
+                    'Reminder': 'text-warning',
+                    'PaymentSubmitted': 'text-primary',
+                    'PaymentApproved': 'text-success',
+                    'PaymentRejected': 'text-danger'
+                };
+                return colors[type] || 'text-secondary';
+            }
+        </script>
+    }
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

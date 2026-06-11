@@ -1,0 +1,148 @@
+@model PUPEventVenue.Models.Reservation
+@{
+    ViewData["Title"] = "Attendee List";
+    Layout = "_Layout";
+    var regLink = ViewBag.RegistrationLink as string ?? "";
+}
+
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-users me-2"></i>Attendees</h1>
+                <p class="mb-0 opacity-75">@Model.EventName &nbsp;|&nbsp; @Model.Venue?.Name</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a asp-controller="Attendees" asp-action="ExportCsv" asp-route-reservationId="@Model.ReservationId"
+                   class="btn btn-gold fw-bold rounded-pill px-3">
+                    <i class="fas fa-download me-1"></i>Export CSV
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <!-- Registration Link -->
+    <div class="card border-0 shadow-sm rounded-xl p-3 mb-4">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <i class="fas fa-link text-maroon fs-5"></i>
+            <div class="flex-grow-1">
+                <div class="small fw-semibold mb-1">Public Registration Link — Share with participants</div>
+                <div class="d-flex gap-2">
+                    <input type="text" value="@regLink" id="regLink" class="form-control form-control-sm rounded-pill" readonly />
+                    <button class="btn btn-sm btn-pup rounded-pill px-3" onclick="copyLink()"><i class="fas fa-copy me-1"></i>Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-xl p-3 text-center">
+                <div class="fs-2 fw-bold text-maroon">@Model.Attendees.Count</div>
+                <div class="small text-muted">Total Registered</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-xl p-3 text-center">
+                <div class="fs-2 fw-bold text-success">@Model.Attendees.Count(a => a.HasAttended)</div>
+                <div class="small text-muted">Attended</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-xl p-3 text-center">
+                <div class="fs-2 fw-bold text-warning">@Model.Attendees.Count(a => !a.HasAttended)</div>
+                <div class="small text-muted">Not Yet</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-xl p-3 text-center">
+                <div class="fs-2 fw-bold" style="color:var(--pup-maroon);">@Model.Venue?.Capacity</div>
+                <div class="small text-muted">Venue Capacity</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendee Table -->
+    <div class="card border-0 shadow-sm rounded-xl overflow-hidden">
+        @if (!Model.Attendees.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-users fa-3x mb-3 opacity-25"></i>
+                <p>No attendees registered yet. Share the registration link above.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-pup mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Student #</th>
+                            <th>Department</th>
+                            <th>Registered</th>
+                            <th>Attended</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{int i = 1;}
+                        @foreach (var a in Model.Attendees.OrderBy(a => a.RegisteredAt))
+                        {
+                            <tr>
+                                <td class="text-muted small">@i++</td>
+                                <td class="fw-semibold">@a.FullName</td>
+                                <td class="small text-muted">@a.Email</td>
+                                <td class="small">@(a.StudentNumber ?? "—")</td>
+                                <td class="small">@(a.Department ?? "—")</td>
+                                <td class="small text-muted">@a.RegisteredAt.ToString("MMM dd, hh:mm tt")</td>
+                                <td>
+                                    <form asp-action="MarkAttended" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="attendeeId" value="@a.AttendeeId" />
+                                        <input type="hidden" name="reservationId" value="@Model.ReservationId" />
+                                        <button type="submit" class="btn btn-sm @(a.HasAttended ? "btn-success" : "btn-outline-secondary") rounded-pill px-3">
+                                            @(a.HasAttended ? "✓ Yes" : "Mark")
+                                        </button>
+                                    </form>
+                                </td>
+                                <td class="text-end">
+                                    <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Remove this attendee?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="attendeeId" value="@a.AttendeeId" />
+                                        <input type="hidden" name="reservationId" value="@Model.ReservationId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="mt-3">
+        <a asp-controller="Reservations" asp-action="Details" asp-route-id="@Model.ReservationId" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="fas fa-arrow-left me-1"></i>Back to Reservation
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function copyLink() {
+    const input = document.getElementById('regLink');
+    input.select();
+    navigator.clipboard.writeText(input.value);
+    alert('Link copied to clipboard!');
+}
+</script>
+}

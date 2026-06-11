@@ -1,0 +1,94 @@
+@{
+    ViewData["Title"] = "Venue Usage Monitor";
+    Layout = "_Layout";
+    var stats = Model as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-chart-bar me-2"></i>Venue Usage Monitor</h1>
+        <p class="mb-0 opacity-75">Track utilization and occupancy across all venues</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row g-4">
+        @foreach (var v in (IEnumerable<dynamic>)Model)
+        {
+            int pct = v.Capacity > 0 ? (int)Math.Min(100, ((double)v.TotalAttendees / v.Capacity) * 100) : 0;
+            string barColor = pct >= 80 ? "#DC2626" : pct >= 50 ? "#D97706" : "#059669";
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm rounded-xl p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="fw-bold mb-0">@v.Name</h6>
+                            <span class="badge @(v.IsAvailable ? "bg-success" : "bg-secondary") rounded-pill small mt-1">
+                                @(v.IsAvailable ? "Available" : "Unavailable")
+                            </span>
+                        </div>
+                        <div class="stat-icon" style="background:rgba(139,0,0,.1);width:42px;height:42px;">
+                            <i class="fas fa-building text-maroon"></i>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="bg-light rounded-xl p-2 text-center">
+                                <div class="fw-bold fs-5 text-maroon">@v.TotalReservations</div>
+                                <div class="small text-muted">Total Requests</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light rounded-xl p-2 text-center">
+                                <div class="fw-bold fs-5 text-success">@v.ApprovedReservations</div>
+                                <div class="small text-muted">Approved</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light rounded-xl p-2 text-center">
+                                <div class="fw-bold fs-5 text-primary">@v.TotalAttendees</div>
+                                <div class="small text-muted">Total Attendees</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light rounded-xl p-2 text-center">
+                                <div class="fw-bold fs-5">@v.Capacity.ToString("N0")</div>
+                                <div class="small text-muted">Capacity</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-muted fw-semibold">Attendee Fill Rate</span>
+                            <span class="fw-bold" style="color:@barColor;">@pct%</span>
+                        </div>
+                        <div class="progress rounded-pill" style="height:10px;">
+                            <div class="progress-bar rounded-pill" style="width:@pct%;background:@barColor;" role="progressbar"></div>
+                        </div>
+                    </div>
+
+                    @if (v.LastUsed != null)
+                    {
+                        <div class="small text-muted mt-2">
+                            <i class="fas fa-clock me-1"></i>Last used: @((DateTime)v.LastUsed).ToString("MMM dd, yyyy")
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="small text-muted mt-2"><i class="fas fa-clock me-1"></i>Not yet used</div>
+                    }
+
+                    <div class="mt-3 pt-3 border-top">
+                        <a asp-controller="Venues" asp-action="Edit" asp-route-id="@v.VenueId" class="btn btn-sm btn-pup-outline rounded-pill px-3 me-2">
+                            <i class="fas fa-edit me-1"></i>Edit
+                        </a>
+                        <a asp-controller="Reservations" asp-action="Index" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                            <i class="fas fa-list me-1"></i>Reservations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

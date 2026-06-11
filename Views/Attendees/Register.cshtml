@@ -1,0 +1,65 @@
+@model PUPEventVenue.ViewModels.AttendeeRegisterViewModel
+@{
+    ViewData["Title"] = "Event Registration";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div class="container">
+        <div class="text-center">
+            <div class="mb-2"><i class="fas fa-ticket-alt fa-2x opacity-75"></i></div>
+            <h1>Event Registration</h1>
+            @if (Model.Reservation != null)
+            {
+                <p class="mb-0 opacity-80">@Model.Reservation.EventName &nbsp;|&nbsp; @Model.Reservation.Venue?.Name</p>
+                <p class="mb-0 opacity-70 small">@Model.Reservation.StartDateTime.ToString("MMMM dd, yyyy hh:mm tt")</p>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-xl">
+                <div class="card-body p-4">
+                    <h5 class="section-title mb-3">Your Information</h5>
+                    <form asp-action="Register" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="ReservationId" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small rounded-xl"></div>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="FullName" class="form-label">Full Name *</label>
+                                <input asp-for="FullName" class="form-control" placeholder="Juan dela Cruz" />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="Email" class="form-label">Email Address *</label>
+                                <input asp-for="Email" class="form-control" placeholder="your@email.com" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="StudentNumber" class="form-label">Student Number</label>
+                                <input asp-for="StudentNumber" class="form-control" placeholder="2021-00001" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Department" class="form-label">Department</label>
+                                <input asp-for="Department" class="form-control" placeholder="BSIT" />
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="09XX-XXX-XXXX" />
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-pup w-100 py-2 rounded-pill fw-bold mt-4">
+                            <i class="fas fa-user-check me-2"></i>Register for this Event
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

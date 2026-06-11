@@ -1,0 +1,88 @@
+@model PUPEventVenue.Models.ApplicationUser
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-user me-2"></i>My Profile</h1>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-xl overflow-hidden">
+                <!-- Profile Header -->
+                <div class="p-5 text-center text-white" style="background:linear-gradient(135deg,var(--pup-maroon),var(--pup-maroon-dark));">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
+                         style="width:80px;height:80px;background:var(--pup-gold);font-size:2rem;font-weight:700;color:var(--pup-maroon);">
+                        @Model.FullName[0].ToString().ToUpper()
+                    </div>
+                    <h4 class="fw-bold mb-1">@Model.FullName</h4>
+                    <p class="small mb-1 opacity-80">@Model.Email</p>
+                    <span class="badge" style="background:var(--pup-gold);color:var(--pup-maroon);">
+                        @(User.IsInRole("Admin") ? "Administrator" : "Event Organizer")
+                    </span>
+                </div>
+
+                <div class="card-body p-4">
+                    <h5 class="section-title mb-3">Account Information</h5>
+                    <div class="row g-3">
+                        @foreach (var (label, icon, val) in new[]{
+                            ("Full Name", "fa-user", Model.FullName),
+                            ("Email Address", "fa-envelope", Model.Email ?? "—"),
+                            ("Student Number", "fa-id-card", Model.StudentNumber ?? "—"),
+                            ("Organization", "fa-users", Model.OrganizationName ?? "—"),
+                            ("Department / College", "fa-graduation-cap", Model.Department ?? "—"),
+                            ("Phone Number", "fa-phone", Model.PhoneNumber ?? "—")
+                        })
+                        {
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center gap-2 p-3 bg-light rounded-xl">
+                                    <i class="fas @icon text-maroon" style="width:18px;"></i>
+                                    <div>
+                                        <div class="small text-muted">@label</div>
+                                        <div class="fw-semibold">@val</div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-2 p-3 bg-light rounded-xl">
+                                <i class="fas fa-calendar-alt text-maroon" style="width:18px;"></i>
+                                <div>
+                                    <div class="small text-muted">Member Since</div>
+                                    <div class="fw-semibold">@Model.CreatedAt.ToString("MMMM dd, yyyy")</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-2 p-3 bg-light rounded-xl">
+                                <i class="fas fa-shield-alt text-maroon" style="width:18px;"></i>
+                                <div>
+                                    <div class="small text-muted">Account Status</div>
+                                    <div class="fw-semibold">
+                                        <span class="badge @(Model.IsActive ? "bg-success" : "bg-danger") rounded-pill">
+                                            @(Model.IsActive ? "Active" : "Inactive")
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                        <a asp-controller="Home" asp-action="Dashboard" class="btn btn-pup rounded-pill px-4">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                        <a asp-controller="Reservations" asp-action="Index" class="btn btn-pup-outline rounded-pill px-4">
+                            <i class="fas fa-calendar me-2"></i>My Reservations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

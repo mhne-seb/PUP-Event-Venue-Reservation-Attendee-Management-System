@@ -1,0 +1,110 @@
+@* ───── DETAILS VIEW ───── *@
+@model PUPEventVenue.Models.Venue
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = "_Layout";
+    bool isDetails = true;
+}
+
+@if (isDetails)
+{
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-2" style="--bs-breadcrumb-divider-color:rgba(255,255,255,.5);">
+            <li class="breadcrumb-item"><a asp-controller="Venues" asp-action="Index" class="text-white opacity-75">Venues</a></li>
+            <li class="breadcrumb-item active text-white">@Model.Name</li>
+        </ol></nav>
+        <h1>@Model.Name</h1>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-xl overflow-hidden mb-4">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" alt="@Model.Name" class="w-100" style="max-height:360px;object-fit:cover;" onerror="this.style.display='none';" />
+                }
+                else
+                {
+                    <div class="venue-img-placeholder" style="height:260px;"><i class="fas fa-building fa-4x text-white opacity-40"></i></div>
+                }
+                <div class="card-body p-4">
+                    <div class="d-flex flex-wrap gap-3 mb-3">
+                        <span class="badge @(Model.IsAvailable ? "bg-success" : "bg-secondary") fs-6 px-3 py-2 rounded-pill">
+                            <i class="fas fa-circle me-1"></i>@(Model.IsAvailable ? "Available for Booking" : "Currently Unavailable")
+                        </span>
+                    </div>
+                    <h5 class="section-title">About this Venue</h5>
+                    <p class="text-muted">@Model.Description</p>
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="stat-icon" style="background:rgba(139,0,0,.1);width:40px;height:40px;"><i class="fas fa-map-marker-alt text-maroon"></i></div>
+                                <div><div class="small text-muted">Location</div><div class="fw-semibold">@Model.Location</div></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="stat-icon" style="background:rgba(139,0,0,.1);width:40px;height:40px;"><i class="fas fa-users text-maroon"></i></div>
+                                <div><div class="small text-muted">Capacity</div><div class="fw-semibold">@Model.Capacity.ToString("N0") persons</div></div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (Model.AmenitiesList.Any())
+                    {
+                        <div class="mt-4">
+                            <h6 class="fw-bold mb-2">Amenities & Facilities</h6>
+                            <div>
+                                @foreach (var a in Model.AmenitiesList)
+                                {
+                                    <span class="amenity-pill"><i class="fas fa-check-circle me-1"></i>@a</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-xl p-4 mb-3">
+                <h5 class="section-title mb-3">Reserve This Venue</h5>
+                @if (!User.Identity?.IsAuthenticated ?? true)
+                {
+                    <p class="text-muted small">Please login to reserve this venue.</p>
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-pup w-100 rounded-pill">Login to Reserve</a>
+                }
+                else if (Model.IsAvailable)
+                {
+                    <a asp-controller="Reservations" asp-action="Create" asp-route-venueId="@Model.VenueId" class="btn btn-pup w-100 rounded-pill py-2 fw-bold">
+                        <i class="fas fa-calendar-plus me-2"></i>Submit Reservation Request
+                    </a>
+                    <p class="text-muted small mt-2 mb-0 text-center">All requests require admin approval</p>
+                }
+                else
+                {
+                    <div class="alert alert-secondary rounded-xl small">This venue is currently not available for booking.</div>
+                }
+            </div>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="card border-0 shadow-sm rounded-xl p-3">
+                    <h6 class="fw-bold mb-2">Admin Actions</h6>
+                    <div class="d-flex gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.VenueId" class="btn btn-outline-secondary btn-sm flex-grow-1 rounded-pill">
+                            <i class="fas fa-edit me-1"></i>Edit
+                        </a>
+                        <form asp-action="Delete" asp-route-id="@Model.VenueId" method="post" onsubmit="return confirm('Delete this venue?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+}

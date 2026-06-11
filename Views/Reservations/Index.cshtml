@@ -1,0 +1,119 @@
+@model List<PUPEventVenue.Models.Reservation>
+@{
+    ViewData["Title"] = "Reservations";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-calendar-check me-2"></i>
+            @(User.IsInRole("Admin") ? "All Reservation Requests" : "My Reservations")
+        </h1>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <!-- Filters -->
+    <form method="get" class="card border-0 shadow-sm rounded-xl p-3 mb-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label small fw-semibold">Search</label>
+                <input type="text" name="search" value="@ViewBag.Search" class="form-control rounded-pill" placeholder="Event name or venue..." />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Status</label>
+                <select name="status" class="form-select rounded-pill">
+                    <option value="">All Status</option>
+                    <option value="Pending" selected="@(ViewBag.Status == "Pending")">Pending</option>
+                    <option value="Approved" selected="@(ViewBag.Status == "Approved")">Approved</option>
+                    <option value="Rejected" selected="@(ViewBag.Status == "Rejected")">Rejected</option>
+                    <option value="Cancelled" selected="@(ViewBag.Status == "Cancelled")">Cancelled</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-pup rounded-pill flex-grow-1"><i class="fas fa-filter me-1"></i>Filter</button>
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-3"><i class="fas fa-times"></i></a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Status Tab Summary -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        @foreach (var (status, color) in new[]{("Pending","warning"),("Approved","success"),("Rejected","danger"),("Cancelled","secondary")})
+        {
+            var cnt = Model.Count(r => r.Status == status);
+            <a asp-action="Index" asp-route-status="@status" class="badge fs-6 px-3 py-2 text-decoration-none badge-@status.ToLower() rounded-pill @(ViewBag.Status == status ? "border border-dark" : "")">
+                @status: @cnt
+            </a>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-calendar-times fa-3x mb-3 opacity-25"></i>
+            <h5>No reservations found</h5>
+            <a asp-controller="Venues" asp-action="Index" class="btn btn-pup rounded-pill px-4">Browse Venues</a>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm rounded-xl overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-pup mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Event</th>
+                            <th>Venue</th>
+                            @if (User.IsInRole("Admin")) { <th>Organizer</th> }
+                            <th>Date & Time</th>
+                            <th>Status</th>
+                            <th>Attendees</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model)
+                        {
+                            <tr>
+                                <td class="text-muted small">#@r.ReservationId</td>
+                                <td>
+                                    <div class="fw-semibold">@r.EventName</div>
+                                    @if (!string.IsNullOrEmpty(r.EventType))
+                                    {
+                                        <div class="small text-muted">@r.EventType</div>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="small fw-semibold">@r.Venue?.Name</div>
+                                    <div class="small text-muted">@r.Venue?.Location</div>
+                                </td>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <td>
+                                        <div class="small fw-semibold">@r.Organizer?.FullName</div>
+                                        <div class="small text-muted">@r.Organizer?.OrganizationName</div>
+                                    </td>
+                                }
+                                <td class="small">
+                                    <div>@r.StartDateTime.ToString("MMM dd, yyyy")</div>
+                                    <div class="text-muted">@r.StartDateTime.ToString("hh:mm tt") – @r.EndDateTime.ToString("hh:mm tt")</div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-@r.Status.ToLower() rounded-pill px-3 py-1">@r.Status</span>
+                                </td>
+                                <td class="small">
+                                    <i class="fas fa-users text-muted me-1"></i>@r.Attendees?.Count ?? 0
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Details" asp-route-id="@r.ReservationId" class="btn btn-sm btn-pup-outline rounded-pill px-3">View</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

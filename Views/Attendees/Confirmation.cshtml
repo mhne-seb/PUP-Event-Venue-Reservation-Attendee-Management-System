@@ -1,0 +1,43 @@
+@* ── Confirmation View ── *@
+@model PUPEventVenue.Models.Attendee
+@{
+    ViewData["Title"] = "Registration Confirmed";
+    Layout = "_Layout";
+}
+
+<div class="container py-5 text-center">
+    <div class="card border-0 shadow-sm rounded-xl p-5 mx-auto" style="max-width:520px;">
+        <div class="mb-4">
+            <div class="mx-auto d-flex align-items-center justify-content-center rounded-circle"
+                 style="width:80px;height:80px;background:#D1E7DD;">
+                <i class="fas fa-check-circle fa-3x text-success"></i>
+            </div>
+        </div>
+        <h3 class="fw-bold">You're Registered!</h3>
+        <p class="text-muted mb-4">You have successfully registered for this event.</p>
+
+        <div class="bg-light rounded-xl p-4 text-start mb-4">
+            <div class="row g-2">
+                <div class="col-5 text-muted small fw-semibold">Name</div>
+                <div class="col-7 small">@Model.FullName</div>
+                <div class="col-5 text-muted small fw-semibold">Email</div>
+                <div class="col-7 small">@Model.Email</div>
+                <div class="col-5 text-muted small fw-semibold">Event</div>
+                <div class="col-7 small">@Model.Reservation?.EventName</div>
+                <div class="col-5 text-muted small fw-semibold">Venue</div>
+                <div class="col-7 small">@Model.Reservation?.Venue?.Name</div>
+                <div class="col-5 text-muted small fw-semibold">Date</div>
+                <div class="col-7 small">@Model.Reservation?.StartDateTime.ToString("MMM dd, yyyy hh:mm tt")</div>
+            </div>
+        </div>
+
+        <div class="alert alert-info rounded-xl small text-start">
+            <i class="fas fa-info-circle me-1"></i>
+            Please present this confirmation (or your email) at the event for check-in.
+        </div>
+
+        <a asp-controller="Home" asp-action="Index" class="btn btn-pup rounded-pill px-4 mt-2">
+            <i class="fas fa-home me-2"></i>Back to Home
+        </a>
+    </div>
+</div>
