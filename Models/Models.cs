@@ -115,15 +115,35 @@ namespace PUPEventVenue.Models
         public int AttendeeCount => Attendees?.Count ?? 0;
     }
 
-    public static class ReservationStatus
-    {
-        public const string Pending = "Pending";
-        public const string PendingPayment = "PendingPayment";
-        public const string PaymentVerified = "PaymentVerified";
-        public const string Approved = "Approved";
-        public const string Rejected = "Rejected";
-        public const string Cancelled = "Cancelled";
-    }
+public static class ReservationStatus
+{
+    public const string Pending = "Pending";
+    public const string PendingPayment = "PendingPayment";
+    public const string PaymentVerified = "PaymentVerified";
+    public const string Approved = "Approved";
+    public const string Rejected = "Rejected";
+    public const string Cancelled = "Cancelled";
+    public const string InProgress = "InProgress";      // EVENT STARTED
+    public const string Completed = "Completed";        // EVENT ENDED
+    public const string NoShow = "NoShow";              // EVENT ENDED WITH NO ATTENDEES
+}
+
+// Add this new model after the Attendee class
+public class EventLog
+{
+    public int EventLogId { get; set; }
+
+    [Required]
+    public int ReservationId { get; set; }
+
+    [Required]
+    public string EventType { get; set; } = string.Empty; // "EventStarted", "EventEnded", "AttendeeCheckedIn"
+
+    public string? Description { get; set; }
+    public DateTime LoggedAt { get; set; } = DateTime.UtcNow;
+
+    public Reservation? Reservation { get; set; }
+}
 
     // ─── Attendee ─────────────────────────────────────────────────
     public class Attendee
