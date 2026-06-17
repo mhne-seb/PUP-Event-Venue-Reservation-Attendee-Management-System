@@ -254,3 +254,8 @@ C:\Users\DELL\Downloads\PUP-Event-Venue-Reservation-and-Attendee-Management-Syst
 C:\Users\DELL\Downloads\PUP-Event-Venue-Reservation-and-Attendee-Management-System\PUP-Event-Venue\obj\Debug\net8.0\PUPEventVenue.pdb
 C:\Users\DELL\Downloads\PUP-Event-Venue-Reservation-and-Attendee-Management-System\PUP-Event-Venue\obj\Debug\net8.0\PUPEventVenue.genruntimeconfig.cache
 C:\Users\DELL\Downloads\PUP-Event-Venue-Reservation-and-Attendee-Management-System\PUP-Event-Venue\obj\Debug\net8.0\ref\PUPEventVenue.dll
+C:\Users\DELL\Downloads\PUP-Event-Venue-Reservation-and-Attendee-Management-System\PUP-Event-Venue\bin\Debug\net8.0\out\web.config
+C:\Users\DELL\Downloads\PUP-Event-Venue-Reservation-and-Attendee-Management-System\PUP-Event-Venue\bin\Debug\net8.0\out\appsettings.json
+C:\Users\DELL\Downloads\PUP-Event-Venue-Reservation-and-Attendee-Management-System\PUP-Event-Venue\bin\Debug\net8.0\out\PUPEventVenue.deps.json
+C:\Users\DELL\Downloads\PUP-Event-Venue-Reservation-and-Attendee-Management-System\PUP-Event-Venue\bin\Debug\net8.0\out\PUPEventVenue.runtimeconfig.json
+C:\Users\DELL\Downloads\PUP-Event-Venue-Reservation-and-Attendee-Management-System\PUP-Event-Venue\bin\Debug\net8.0\out\PUPEventVenue.staticwebassets.endpoints.json

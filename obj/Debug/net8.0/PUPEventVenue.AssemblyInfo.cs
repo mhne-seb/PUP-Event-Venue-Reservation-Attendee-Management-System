@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PUPEventVenue")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8eac25db2a6f56aefc19ec28f48cd99852289b6e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e75f76d7f3e459d964a79bd0b6581cca51ece7a6")]
 [assembly: System.Reflection.AssemblyProductAttribute("PUPEventVenue")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PUPEventVenue")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
